@@ -1,0 +1,18 @@
+language: generic
+sudo: required
+services:
+    - docker
+before_install:
+    - docker build -t marlonmacf/react-test -f ./client/Dockerfile.dev ./client
+script:
+    - docker run -e CI=true marlonmacf/react-test npm test
+after_success:
+    - docker build -t marlonmacf/multi-client ./client
+    - docker build -t marlonmacf/multi-nginx ./nginx
+    - docker build -t marlonmacf/multi-server ./server
+    - docker build -t marlonmacf/multi-worker ./worker
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+    - docker push marlonmacf/multi-client
+    - docker push marlonmacf/multi-nginx
+    - docker push marlonmacf/multi-server
+    - docker push marlonmacf/multi-worker
